@@ -1,33 +1,35 @@
 # 🌐 IP Check Service
 
-Un servizio web minimale che restituisce l'indirizzo IP pubblico del client HTTP. Replica il comportamento di [`https://checkip.amazonaws.com`](https://checkip.amazonaws.com), ma è self-hosted e containerizzato.
+This file is [also available in italian](README-IT.md).
 
-## 🚀 Funzionalità
+A minimal web service that returns the client's public IP address. It replicates the behavior of [`https://checkip.amazonaws.com`](https://checkip.amazonaws.com), but is self-hosted and containerized.
 
-- Restituisce l'IP del client (o header `X-Forwarded-For` se presente)
-- Risposta in plain text
-- Contenitore Docker leggero
-- Pronto per il deploy con Docker Compose
-- Ideale come microservizio pubblico o interno
+## 🚀 Features
+
+- Returns the client's IP (or `X-Forwarded-For` header if present)
+- Plain text response
+- Lightweight Docker container
+- Ready for deployment with Docker Compose
+- Ideal as a public or internal microservice
 
 ---
 
-## 📦 Utilizzo via Docker
+## 📦 Usage via Docker
 
-### Esecuzione rapida:
+### Quick Start:
 
 ```bash
 docker run -d -p 80:8080 gfsolone/ip:latest
 ```
 
-Visita poi: [http://localhost](http://localhost)  
-Oppure esegui: `curl http://localhost`
+Then visit: `http://localhost`  
+Or run: `curl http://localhost`
 
 ---
 
-## 🧱 Utilizzo via Docker Compose
+## 🧱 Usage via Docker Compose
 
-Crea un file `docker-compose.yml`:
+Create a `docker-compose.yml` file:
 
 ```yaml
 version: '3.8'
@@ -41,7 +43,7 @@ services:
     restart: unless-stopped
 ```
 
-Poi esegui:
+Then run:
 
 ```bash
 docker compose up -d
@@ -49,7 +51,20 @@ docker compose up -d
 
 ---
 
-## 🔍 Esempio di risposta
+## 📦 Usage via GitHub Container Registry (GHCR)
+
+Alternatively to Docker Hub, you can use the package image directly from GitHub Container Registry (GHCR). To run the service, use the following command:
+
+```bash
+docker run -d -p 80:8080 ghcr.io/gioxx/ip:latest
+```
+
+Then visit: `http://localhost`  
+Or run: `curl http://localhost`
+
+---
+
+## 🔍 Example Response
 
 ```bash
 $ curl http://localhost
@@ -58,15 +73,15 @@ $ curl http://localhost
 
 ---
 
-## 🛠️ Requisiti tecnici
+## 🛠️ Technical Requirements
 
-- L'app è sviluppata in Python con [Flask](https://flask.palletsprojects.com/)
-- Espone l'indirizzo IP usando `request.remote_addr` o `X-Forwarded-For`
-- Ascolta sulla porta `8080` all'indirizzo `0.0.0.0` per la compatibilità con Docker
+- The app is developed in Python with [Flask](https://flask.palletsprojects.com/)
+- It exposes the IP using `request.remote_addr` or `X-Forwarded-For`
+- Listens on port `8080` at `0.0.0.0` for compatibility with Docker
 
 ---
 
-## 🗂️ Struttura del progetto
+## 🗂️ Project Structure
 
 ```
 .
@@ -77,6 +92,6 @@ $ curl http://localhost
 
 ---
 
-## 📄 Licenza
+## 📄 License
 
-MIT License — fai ciò che vuoi, ma lascia i crediti 😉
+MIT License — do whatever you want, but keep the credits 😉
