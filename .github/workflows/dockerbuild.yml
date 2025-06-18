@@ -30,7 +30,6 @@ jobs:
           tags: |
             latest
             ${{ github.ref_name }}
-            ${{ github.ref_name }}-latest
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.6.0
