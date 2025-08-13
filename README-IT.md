@@ -126,20 +126,10 @@ $ curl http://localhost
 
 È disponibile un endpoint demo: https://ip.gioxx.org
 
-> **Nota:** è ospitato su un Raspberry Pi a casa (best effort).  
-> Potrebbe non essere sempre raggiungibile—meglio non usarlo in produzione.  
-> L’endpoint si comporta come questo servizio: restituisce l’IP del client in testo semplice.
-
----
-
-## 🗂️ Struttura del progetto
-
-```
-.
-├── app.py
-├── Dockerfile
-└── example/docker-compose.yml
-```
+> [!NOTE]  
+> Il container è ospitato su un Raspberry Pi a casa (best effort).  
+> Potrebbe non essere sempre raggiungibile, meglio non usarlo in produzione.  
+> L'endpoint si comporta come questo servizio: restituisce l'IP del client in testo semplice.
 
 ---
 
