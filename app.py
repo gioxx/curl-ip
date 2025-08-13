@@ -54,12 +54,9 @@ def check_auth(auth_header: str) -> bool:
     except (binascii.Error, UnicodeDecodeError):
         return False
 
-@app.route('/favicon.ico')
+@app.route('/favicon.ico', methods=['GET', 'HEAD'])
 def favicon():
-    """
-    Return a small PNG favicon to avoid 404s.
-    Adds long caching to reduce requests.
-    """
+    """Return a PNG favicon to avoid 404s and enable browser caching."""
     return Response(
         FAVICON_BYTES,
         mimetype='image/png',
