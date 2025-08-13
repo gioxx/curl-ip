@@ -38,6 +38,22 @@ def check_auth(auth_header):
     except:
         return False
 
+@app.route('/favicon.ico')
+def favicon():
+    """Return a simple default favicon to avoid 404 errors in logs."""
+    # Simple 16x16 globe icon in base64 (IP/network themed)
+    favicon_data = base64.b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/"
+    "9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAABpklEQVQ4T6VTsUrDUBQ9n1CClz3KqF4A"
+    "olZ0wcdpFYl0QEHNqOqVvGfYAGjp4sOMhW7d2Io8iAAZbN7+1cREUvD3zvnnc+959d"
+    "EKIInB6DkaPB2hBZXqMQdRAv8jQF5rMNuvUzB1vtrTdZfCGkWeB+SKOGfhdVjYcW+z"
+    "9Y9NAsC1P3uV6kXYV5HRAZYuhAS+78mZizqPoS0Sby2acSr8oYcHqPtyBsyQ0KMuYB"
+    "r+eY7IN40AaFsyZrtj4SGZqNAR3eUBglHxzdpb9tI9wwBA07V77oTQpUoCve0k1WbD"
+    "PlrQ88o6H2Hmo4UuopXBLGJgXvWDR5TYxuhWM1S7IN1H1Qy8W60CQvRAjXAlAapAqJ"
+    "WZ2GyKxiS62q8CY9w1N6h8bSBzWxjN3Yxn+u8xEYoxJoCn4qJt2CznkIUK1bnUukPv"
+    "wIZPABd9zghA84KpAAAAAElFTkSuQmCC"
+)
+
 @app.route('/')
 def get_ip():
     """
