@@ -1,9 +1,0 @@
-version: '3.8'
-
-services:
-  checkip:
-    build: .
-    container_name: checkip-service
-    ports:
-      - "80:8080"
-    restart: unless-stopped

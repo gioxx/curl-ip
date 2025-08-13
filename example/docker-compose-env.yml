@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   ip:
     container_name: ip
@@ -6,8 +6,13 @@ services:
     ports:
       - "80:8080"
     restart: unless-stopped
-    environment:
-      - ENABLE_DEBUG=${ENABLE_DEBUG:-false}
-      - DEBUG_TOKEN=${DEBUG_TOKEN}
     env_file:
       - .env
+    environment:
+      ENABLE_DEBUG: "${ENABLE_DEBUG:-false}" # Can be overridden by env_file
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
