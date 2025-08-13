@@ -126,20 +126,10 @@ $ curl http://localhost
 
 A public demo endpoint is available at: https://ip.gioxx.org/
 
+> [!NOTE]  
 > **Heads-up:** this is hosted on a Raspberry Pi at home (best-effort availability).  
-> It may be temporarily unreachable—please don’t rely on it for production.  
-> The endpoint behaves like this service: it returns the client’s IP as plain text.
-
----
-
-## 🗂️ Project Structure
-
-```
-.
-├── app.py
-├── Dockerfile
-└── example/docker-compose.yml
-```
+> It may be temporarily unreachable, **please don’t rely on it for production**.  
+> The endpoint behaves like this service: it returns the client's IP as plain text.
 
 ---
 
