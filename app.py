@@ -1,7 +1,6 @@
-from flask import Flask, request, Response, jsonify
+from flask import Flask, request, Response, redirect, jsonify
 from functools import wraps
 from markupsafe import escape
-from io import BytesIO
 import base64
 import binascii
 import hmac
@@ -10,46 +9,18 @@ import os
 # If you run behind a reverse proxy (Nginx/Traefik), consider enabling ProxyFix:
 # from werkzeug.middleware.proxy_fix import ProxyFix
 
-try:
-    from PIL import Image
-except ImportError:
-    Image = None
-
 app = Flask(__name__)
 # app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1)
 
-# --- IP favicon in Base64 ---
-FAVICON_B64 = (
-    "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"
-)
-FAVICON_PNG_BYTES = base64.b64decode(FAVICON_B64)
-
-# Optionally convert PNG -> ICO for maximum browser compatibility
-FAVICON_ICO_BYTES = None
-if Image is not None:
-    try:
-        _im = Image.open(BytesIO(FAVICON_PNG_BYTES))
-        _buf = BytesIO()
-        # Provide common sizes; at least 16x16 is enough
-        _im.save(_buf, format="ICO", sizes=[(16,16), (32,32)])
-        FAVICON_ICO_BYTES = _buf.getvalue()
-    except Exception:
-        FAVICON_ICO_BYTES = None
+# Host favicon from GitHub
+FAVICON_URL = "https://raw.githubusercontent.com/gioxx/curl-ip/main/favicon.ico"
 
 @app.route('/favicon.ico', methods=['GET', 'HEAD'])
 def favicon():
-    """Return favicon as ICO if available, else PNG."""
-    if FAVICON_ICO_BYTES:
-        return Response(
-            FAVICON_ICO_BYTES,
-            mimetype='image/vnd.microsoft.icon',
-            headers={'Cache-Control': 'public, max-age=31536000, immutable'}
-        )
-    return Response(
-        FAVICON_PNG_BYTES,
-        mimetype='image/png',
-        headers={'Cache-Control': 'public, max-age=31536000, immutable'}
-    )
+    """Permanent redirect to a GitHub-hosted .ico."""
+    resp = redirect(FAVICON_URL, code=308)  # 308 Permanent Redirect preserves method/body
+    resp.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+    return resp
 
 def require_auth(f):
     """
@@ -73,13 +44,10 @@ def check_auth(auth_header: str) -> bool:
         scheme, _, encoded = auth_header.partition(' ')
         if scheme.lower() != 'basic' or not encoded:
             return False
-
-        # Strict base64 decode
         decoded = base64.b64decode(encoded, validate=True).decode('utf-8')
         if ':' not in decoded:
             return False
         username, password = decoded.split(':', 1)
-
         expected_user = 'debug'
         expected_pass = os.environ.get('DEBUG_TOKEN') or ''
         return hmac.compare_digest(username, expected_user) and hmac.compare_digest(password, expected_pass)
@@ -104,29 +72,24 @@ def _pick_client_ip() -> str:
     for ip in candidates:
         if not ip:
             continue
-        # Remove possible port suffix (e.g., "1.2.3.4:12345")
+        # Remove possible port suffix (e.g., "1.2.3.4:12345") and handle bracketed IPv6
         ip_clean = ip.split('%')[0].split(']')[-1].split(':')[0] if ip.startswith('[') else ip.split(':')[0]
         try:
             ipaddress.ip_address(ip_clean)
             return ip_clean
         except ValueError:
             continue
-    # As a very last resort, return what Flask gives us
     return request.remote_addr or '0.0.0.0'
 
 @app.route('/')
 def get_ip():
-    """Return client IP as text and advertise favicon via Link header."""
-    ip = (
-        request.headers.get('CF-Connecting-IP') or
-        request.headers.get('X-Real-IP') or
-        (request.headers.get('X-Forwarded-For') or '').split(',')[0].strip() or
-        request.remote_addr
+    """Return client IP as text and advertise the favicon via Link header."""
+    ip = _pick_client_ip()
+    return Response(
+        escape(ip) + "\n",
+        mimetype='text/plain; charset=utf-8',
+        headers={'Link': f'<{FAVICON_URL}>; rel="icon"'}
     )
-    # Add Link header so the browser knows about the icon even on a non-HTML response
-    return Response(escape(ip) + "\n",
-                    mimetype='text/plain',
-                    headers={'Link': '</favicon.ico>; rel="icon"'})
 
 @app.route('/debug')
 @require_auth
@@ -139,12 +102,14 @@ def debug_headers():
     if os.environ.get('ENABLE_DEBUG', 'false').lower() != 'true':
         return 'Hey gringo, there is nothing to see here.', 404
 
+    # Avoid reflecting Authorization header back
+    safe_headers = {k: v for k, v in request.headers.items() if k.lower() != 'authorization'}
     headers_info = {
         'remote_addr': request.remote_addr,
         'x_forwarded_for': request.headers.get('X-Forwarded-For'),
         'x_real_ip': request.headers.get('X-Real-IP'),
         'cf_connecting_ip': request.headers.get('CF-Connecting-IP'),
-        'all_headers': dict(request.headers),
+        'all_headers': safe_headers,
     }
     return jsonify(headers_info)
 
