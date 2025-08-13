@@ -1,7 +1,27 @@
 from flask import Flask, request
+from functools import wraps
 from markupsafe import escape
+import base64
 
-app = Flask(__name__)
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.headers.get('Authorization')
+        if not auth or not check_auth(auth):
+            return 'Unauthorized', 401, {
+                'WWW-Authenticate': 'Basic realm="Debug Area"'
+            }
+        return f(*args, **kwargs)
+    return decorated
+
+def check_auth(auth_header):
+    try:
+        encoded = auth_header.split(' ')[1]
+        decoded = base64.b64decode(encoded).decode('utf-8')
+        username, password = decoded.split(':')
+        return username == 'debug' and password == os.environ.get('DEBUG_TOKEN')
+    except:
+        return False
 
 @app.route('/')
 def get_ip():
@@ -25,26 +45,37 @@ def get_ip():
     return escape(ip) + "\n"
 
 @app.route('/debug')
+@require_auth
 def debug_headers():
     """
-    Return a JSON object with information about the request headers that
-    are relevant for IP address detection. The object has the following
-    properties:
+    Debug endpoint to display request headers if debugging is enabled.
 
-    - remote_addr: the value of request.remote_addr
-    - x_forwarded_for: the value of the X-Forwarded-For header
-    - x_real_ip: the value of the X-Real-IP header
-    - cf_connecting_ip: the value of the CF-Connecting-IP header
-    - all_headers: a dictionary with all the request headers
+    This route is only accessible if the environment variable 'ENABLE_DEBUG' 
+    is set to 'true' and the correct debug token is provided via query 
+    parameter 'token' or header 'X-Debug-Token'.
 
-    This endpoint is useful for debugging IP address detection issues.
+    Returns:
+        - A dictionary containing request headers information if authorized,
+          including 'remote_addr', 'x_forwarded_for', 'x_real_ip', 
+          'cf_connecting_ip', and 'timestamp'.
+        - 'Not Found' with HTTP status 404 if debugging is not enabled.
+        - 'Forbidden' with HTTP status 403 if the debug token is invalid.
     """
+
+    if not os.environ.get('ENABLE_DEBUG', 'false').lower() == 'true':
+        return 'Not Found', 404
+    
+    token = request.args.get('token') or request.headers.get('X-Debug-Token')
+    if token != os.environ.get('DEBUG_TOKEN'):
+        return 'Forbidden', 403
+    
     headers_info = {
         'remote_addr': request.remote_addr,
         'x_forwarded_for': request.headers.get('X-Forwarded-For'),
         'x_real_ip': request.headers.get('X-Real-IP'),
         'cf_connecting_ip': request.headers.get('CF-Connecting-IP'),
-        'all_headers': dict(request.headers)
+        'all_headers': dict(request.headers),
+        'timestamp': request.headers.get('Date')
     }
     return headers_info
 
