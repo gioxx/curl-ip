@@ -8,7 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 RUN pip install --no-cache-dir --disable-pip-version-check --prefer-binary \
-    flask markupsafe gunicorn
+    flask markupsafe gunicorn pillow
 
 COPY app.py /app/app.py
 
