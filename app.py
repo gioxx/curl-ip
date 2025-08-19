@@ -1,39 +1,18 @@
 from flask import Flask, request, Response, redirect, jsonify
 from functools import wraps
 from markupsafe import escape
-import base64
-import binascii
-import hmac
-import ipaddress
-import os
-# If you run behind a reverse proxy (Nginx/Traefik), consider enabling ProxyFix:
-# from werkzeug.middleware.proxy_fix import ProxyFix
+import base64, binascii, hmac, ipaddress, os
 
 app = Flask(__name__)
-# app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1)
 
-# Host favicon from GitHub
 FAVICON_URL = "https://raw.githubusercontent.com/gioxx/curl-ip/main/favicon.ico"
 
 @app.route('/favicon.ico', methods=['GET', 'HEAD'])
 def favicon():
     """Permanent redirect to a GitHub-hosted .ico."""
-    resp = redirect(FAVICON_URL, code=308)  # 308 Permanent Redirect preserves method/body
+    resp = redirect(FAVICON_URL, code=308)
     resp.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
     return resp
-
-def require_auth(f):
-    """
-    Decorator enforcing Basic Auth for /debug.
-    Username must be 'debug' and password equals the DEBUG_TOKEN env var.
-    """
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.headers.get('Authorization')
-        if not auth or not check_auth(auth):
-            return 'Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Debug Area"'}
-        return f(*args, **kwargs)
-    return decorated
 
 def check_auth(auth_header: str) -> bool:
     """
@@ -54,14 +33,34 @@ def check_auth(auth_header: str) -> bool:
     except (binascii.Error, UnicodeDecodeError):
         return False
 
+def require_auth(f):
+    """
+    Gate /debug behind ENABLE_DEBUG + DEBUG_TOKEN and then Basic Auth.
+    Rules:
+      - If ENABLE_DEBUG is missing or not 'true' -> 404
+      - If ENABLE_DEBUG is 'true' but DEBUG_TOKEN is missing -> 500
+      - Else -> enforce Basic Auth (username=debug, password=$DEBUG_TOKEN)
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        enable_debug = os.environ.get('ENABLE_DEBUG')
+        if not enable_debug or enable_debug.lower() != 'true':
+            return 'Hey gringo, there is nothing to see here.', 404
+
+        if not os.environ.get('DEBUG_TOKEN'):
+            return 'Missing DEBUG_TOKEN environment variable in container configuration.', 500
+
+        auth = request.headers.get('Authorization')
+        if not auth or not check_auth(auth):
+            return 'Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Debug Area"'}
+        return f(*args, **kwargs)
+    return decorated
+
 def _pick_client_ip() -> str:
     """
-    Resolve client IP with the following precedence:
-    1. CF-Connecting-IP (Cloudflare)
-    2. X-Real-IP (Nginx/Proxy)
-    3. First IP from X-Forwarded-For
-    4. request.remote_addr
-    Validates the IP format (IPv4/IPv6). If an invalid value is found, falls back.
+    Resolve client IP with precedence:
+    1. CF-Connecting-IP, 2. X-Real-IP, 3. first X-Forwarded-For, 4. remote_addr
+    Validate IPv4/IPv6; strip port/brackets if present.
     """
     candidates = [
         request.headers.get('CF-Connecting-IP'),
@@ -72,7 +71,6 @@ def _pick_client_ip() -> str:
     for ip in candidates:
         if not ip:
             continue
-        # Remove possible port suffix (e.g., "1.2.3.4:12345") and handle bracketed IPv6
         ip_clean = ip.split('%')[0].split(']')[-1].split(':')[0] if ip.startswith('[') else ip.split(':')[0]
         try:
             ipaddress.ip_address(ip_clean)
@@ -95,13 +93,9 @@ def get_ip():
 @require_auth
 def debug_headers():
     """
-    Debug endpoint protected by Basic Auth.
-    Only available when ENABLE_DEBUG=true.
+    Debug endpoint (reachable only when ENABLE_DEBUG=true and DEBUG_TOKEN is set).
     Returns a JSON payload with selected details.
     """
-    if os.environ.get('ENABLE_DEBUG', 'false').lower() != 'true':
-        return 'Hey gringo, there is nothing to see here.', 404
-
     # Avoid reflecting Authorization header back
     safe_headers = {k: v for k, v in request.headers.items() if k.lower() != 'authorization'}
     headers_info = {
@@ -114,5 +108,4 @@ def debug_headers():
     return jsonify(headers_info)
 
 if __name__ == '__main__':
-    # Use 0.0.0.0:8080 by default; adjust as needed.
     app.run(host='0.0.0.0', port=8080)
