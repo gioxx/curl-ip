@@ -4,6 +4,7 @@ from markupsafe import escape
 import base64, binascii, hmac, ipaddress, os
 
 app = Flask(__name__)
+# app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1)
 
 FAVICON_URL = "https://raw.githubusercontent.com/gioxx/curl-ip/main/favicon.ico"
 
