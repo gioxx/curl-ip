@@ -14,6 +14,7 @@ A minimal web service that returns the client's public IP address. It replicates
   4. `request.remote_addr`
 - Favicon served via permanent redirect to a GitHub-hosted `.ico` (or disable it if you prefer)
 - Optional `/debug` endpoint (Basic Auth + env-gated)
+- Optional `/info` endpoint (to open ipinfo.io and read more information about your detected IP address)
 - Lightweight Docker image; ready for Compose / Swarm
 - Works behind reverse proxies (optional `ProxyFix`)
 
@@ -23,8 +24,11 @@ A minimal web service that returns the client's public IP address. It replicates
 
 ```bash
 docker run -d -p 80:8080 gfsolone/ip:latest
-# or using GHCR:
-# docker run -d -p 80:8080 ghcr.io/gioxx/ip:latest
+```
+or using GHCR:
+
+```bash
+docker run -d -p 80:8080 ghcr.io/gioxx/ip:latest
 ```
 
 Then visit: `http://localhost`  
@@ -110,6 +114,9 @@ Favicon:
   Returns selected request headers and resolver info **only if**:
   - `ENABLE_DEBUG=true`, **and**
   - Basic Auth is valid (`username: debug`, `password: $DEBUG_TOKEN`).
+
+**Extra**:  
+Via browser, by pointing to the endpoint `/info`, you will be redirected to https://ipinfo.io/what-is-my-ip to obtain more information about the detected IP.
 
 ---
 
