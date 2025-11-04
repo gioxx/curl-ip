@@ -90,6 +90,12 @@ def get_ip():
         headers={'Link': f'<{FAVICON_URL}>; rel="icon"'}
     )
 
+@app.route('/info')
+def get_info():
+    """Redirect to ipinfo.io for detailed IP information."""
+    ip = _pick_client_ip()
+    return redirect(f'https://ipinfo.io/what-is-my-ip', code=302)
+
 @app.route('/debug')
 @require_auth
 def debug_headers():
