@@ -4,6 +4,13 @@ This file is also available in [Italian](README-IT.md).
 
 A minimal web service that returns the client's public IP address. It replicates the behavior of [`https://checkip.amazonaws.com`](https://checkip.amazonaws.com), but is self-hosted and containerized.
 
+[![](https://img.shields.io/github/issues/gioxx/curl-ip.svg)](https://github.com/gioxx/curl-ip/issues)
+[![](https://img.shields.io/github/issues-pr-raw/gioxx/curl-ip.svg)](https://github.com/gioxx/curl-ip/pulls)
+[![MIT License](https://img.shields.io/github/license/gioxx/curl-ip)](https://github.com/gioxx/curl-ip/blob/main/LICENSE)
+[![](https://img.shields.io/badge/GHCR-available-blue?logo=docker)](https://github.com/users/gioxx/packages/container/package/ip)
+[![](https://img.shields.io/docker/pulls/gfsolone/ip.svg)](https://hub.docker.com/r/gfsolone/ip)
+[![](https://img.shields.io/docker/image-size/gfsolone/ip/latest.svg)](https://hub.docker.com/r/gfsolone/ip)
+
 ## 🚀 Features
 
 - Plain-text IP response
