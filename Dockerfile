@@ -1,4 +1,4 @@
-FROM python:3.15.0b4-slim
+FROM python:3.15.0rc1-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
